@@ -2,9 +2,16 @@
 <html>
 <head>
 	<title>Sandkasse</title>
+	<script type="text/javascript">
+var encodeHTML = (function() {
+	var encodeHTMLmap = { "&" : "&amp;", "'" : "&#39;", '"' : "&quot;", "<" : "&lt;", ">" : "&gt;" };
+	function encodeHTMLmapper(ch) { return encodeHTMLmap[ch]; }
+	return function(text) { return text.replace(/[&"'<>]/g, encodeHTMLmapper); };
+})();
+	</script>
 </head>
 <body style="margin:0.5rem;padding:0;">
-	<textarea id="input" style="width: 100%;"></textarea>
+	<textarea id="input" style="width: 100%; height: calc(100vh - 5rem);"></textarea>
 	<button type="button" onclick="eval(document.getElementById('input').value)">Kør</button>
 	<pre id="output"></pre>
 </body>
