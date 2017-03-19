@@ -5,10 +5,7 @@
 </head>
 <body style="margin:0.5rem;padding:0;">
 	<textarea id="input" style="width: 100%;"></textarea>
-	<button type="button" onclick="">Kør</button>
-	<div id="output"></div>
+	<button type="button" onclick="eval(document.getElementById('input').value)">Kør</button>
+	<pre id="output"></pre>
 </body>
-<script type="text/javascript">
-eval(document.getElementById("input").value)
-</script>
 </html>
