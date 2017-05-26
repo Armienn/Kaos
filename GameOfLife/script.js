@@ -33,7 +33,7 @@ class Game {
         this.width = options.width || 50
         this.height = options.height || 50
         this.borderMode = options.borderMode !== undefined ? options.borderMode : "wrap"
-        this.setupGrid(options.aliveRatio || 0.2)
+        this.setupGrid(options.aliveRatio !== undefined ? options.aliveRatio : 0.2)
     }
 
     setupGrid(aliveRatio = 0){
