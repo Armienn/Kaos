@@ -25,14 +25,14 @@ window.onmousedown = function(event){
 }
 
 class Game {
-    constructor(width, height, borderMode = "wrap", aliveRatio = 0.2){
-        this.spawnPopulations = [3]
-        this.survivalPopulations = [2,3]
-        this.factions = 3
-        this.width = width
-        this.height = height
-        this.borderMode = borderMode
-        this.setupGrid(aliveRatio)
+    constructor(options = {}){
+        this.spawnPopulations = options.spawnPopulations || [3]
+        this.survivalPopulations = options.survivalPopulations || [2,3]
+        this.factions = options.factions || 3
+        this.width = options.width || 50
+        this.height = options.height || 50
+        this.borderMode = options.borderMode !== undefined ? options.borderMode : "wrap"
+        this.setupGrid(options.aliveRatio || 0.2)
     }
 
     setupGrid(aliveRatio = 0){
@@ -188,9 +188,6 @@ class GameDisplay {
         }
 }
 
-var game = new Game(50, 50, "wrap", 0.2)
-var display = new GameDisplay(game)
-
 function showBar(){
 	getEl("bar").style.display = "block"
 }
@@ -201,11 +198,12 @@ function hideBar(){
 
 function reset(){
     game.stop()
-    game = new Game(
-        +getEl("width").value,
-        +getEl("height").value,
-        "wrap",
-        +getEl("aliveRatio").value)
+    game = new Game({
+        width: +getEl("width").value,
+        height: +getEl("height").value,
+        factions: +getEl("factions").value,
+        borderMode: "wrap",
+        aliveRatio: +getEl("aliveRatio").value})
     display = new GameDisplay(game, {cellSize: +getEl("cellSize").value})
     display.drawGrid()
 }
@@ -222,4 +220,10 @@ function run(interval = 100){
     game.start(interval, ()=>{display.drawGrid()})
 }
 
-run()
+var game = new Game()
+var display = new GameDisplay(game)
+
+window.onload = ()=>{
+    autosize()
+    run()
+}
