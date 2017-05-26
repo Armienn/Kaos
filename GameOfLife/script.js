@@ -2,9 +2,6 @@ function getEl(id){
 	return document.getElementById(id)
 }
 
-var lineSize = 3
-var lineColor = "yellow"
-
 var canvas = getEl("canvas")
 var context = canvas.getContext("2d")
 
@@ -14,66 +11,21 @@ canvas.height = window.innerHeight
 window.onresize = function(){
 	canvas.width = window.innerWidth
 	canvas.height = window.innerHeight
-	draw()
 }
 
-function draw(){
-	context.fillStyle = "black"
-	context.fillRect(0,0,canvas.width,canvas.height)
-}
-
-var mouseDown = false
 window.onmousedown = function(event){
-	mouseDown = true
-	context.beginPath()
-	context.moveTo(event.x, event.y)
-	context.lineTo(event.x, event.y)
-	context.lineWidth = lineSize
-	context.strokeStyle = lineColor
-	context.lineCap = "round"
-	context.stroke()
-	//context.fillStyle = lineColor
-    //context.fillRect(Math.floor(event.x-lineSize/2), Math.floor(event.y-lineSize/2), lineSize, lineSize)
-    lastX = event.x
-    lastY = event.y
-}
-window.onmouseup = function(event){
-	mouseDown = false
-    lastX = -1
-    lastY = -1
-}
-
-var lastX = -1
-var lastY = -1
-window.onmousemove = function(event){
-	if(mouseDown){
-        //context.fillStyle = lineColor
-		//context.fillRect(Math.floor(event.x-lineSize/2), Math.floor(event.y-lineSize/2), lineSize, lineSize)
-        if(lastX >= 0 && lastY >= 0){
-            context.beginPath()
-            context.moveTo(lastX, lastY)
-            context.lineTo(event.x, event.y)
-            context.lineWidth = lineSize
-            context.strokeStyle = lineColor
-			context.lineCap = "round"
-            context.stroke()
-        }
-        lastX = event.x
-        lastY = event.y
+    var coordX = Math.floor(event.x/display.cellSize)
+    var coordY = Math.floor(event.y/display.cellSize)
+    if(coordX<game.width && coordY<game.height){
+        game.grid[coordX][coordY]++
+        if(game.factions < game.grid[coordX][coordY])
+            game.grid[coordX][coordY] = 0
     }
+    display.drawGrid()
 }
-
-window.onmousewheel = (event)=>{
-    if(event.deltaY > 0)
-        lineSize--
-    else
-        lineSize++
-}
-
-//draw()
 
 class Game {
-    constructor(width, height, borderMode = "wrap", aliveRatio = 0){
+    constructor(width, height, borderMode = "wrap", aliveRatio = 0.2){
         this.spawnPopulations = [3]
         this.survivalPopulations = [2,3]
         this.factions = 3
@@ -166,7 +118,7 @@ class Game {
             }
     }
 
-    run(interval = 1000, callback = undefined){
+    start(interval = 1000, callback = undefined){
         if(this.intervalId)
             clearInterval(this.intervalId)
         this.intervalId = setInterval(()=>{
@@ -239,4 +191,35 @@ class GameDisplay {
 var game = new Game(50, 50, "wrap", 0.2)
 var display = new GameDisplay(game)
 
-game.run(100, ()=>{display.drawGrid()})
+function showBar(){
+	getEl("bar").style.display = "block"
+}
+
+function hideBar(){
+	getEl("bar").style.display = "none"
+}
+
+function reset(){
+    game.stop()
+    game = new Game(
+        +getEl("width").value,
+        +getEl("height").value,
+        "wrap",
+        +getEl("aliveRatio").value)
+    display = new GameDisplay(game, {cellSize: +getEl("cellSize").value})
+    display.drawGrid()
+}
+
+function autosize(){
+    var width = Math.floor(window.innerWidth/display.cellSize)
+    var height = Math.floor(window.innerHeight/display.cellSize)
+    getEl("width").value = width
+    getEl("height").value = height
+    reset()
+}
+
+function run(interval = 100){
+    game.start(interval, ()=>{display.drawGrid()})
+}
+
+run()

@@ -4,7 +4,17 @@
 	<title>Der var engang en gang og den var en lang gang</title>
 </head>
 <body style="margin:0;padding:0;">
-	<div id="output" style="display: none;"></div>
+	<div id="hoverbar" style="position: absolute; width: 100vw; height: 1rem;" onmouseover="showBar()"></div>
+	<div id="bar" style="position: absolute; width: 100vw; display: none; background-color: white" onmouseout="hideBar()">
+		<button onclick="run()">Start</button>
+		<button onclick="game.stop()">Stop</button>
+		<button onclick="reset()">Reset</button>
+		<input type="number" id="width" value="50"/>
+		<input type="number" id="height" value="50"/>
+		<input type="number" id="aliveRatio" value="0.2"/>
+		<input type="number" id="cellSize" value="5"/>
+		<button onclick="autosize()">Set to window size</button>
+	</div>
 	<canvas id="canvas" style="display: block;"></canvas>
 </body>
 <script src="script.js"></script>
