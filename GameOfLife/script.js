@@ -18,6 +18,7 @@ window.onmousedown = function(event){
     var coordY = Math.floor(event.y/display.cellSize)
     if(coordX<game.width && coordY<game.height){
         game.grid[coordX][coordY]++
+        //game.markUpdateGrid(coordX, coordY, true)
         if(game.factions < game.grid[coordX][coordY])
             game.grid[coordX][coordY] = 0
     }
@@ -49,12 +50,25 @@ class Game {
 
     updateState(){
         var newGrid = []
+        //this.newUpdateGrid = []
         for(var i = 0; i < this.width; i++){
             newGrid[i] = []
-            for(var j = 0; j < this.height; j++)
-                newGrid[i][j] = this.newStateFor(i,j)
+            //if(!this.newUpdateGrid[i])
+            //    this.newUpdateGrid[i] = []
+            for(var j = 0; j < this.height; j++){
+                //if(this.updateGrid){
+                //    if(this.updateGrid[i][j])
+                //        newGrid[i][j] = this.newStateFor(i,j)
+                //    else
+                //        newGrid[i][j] = 0
+                //}
+                //else
+                    newGrid[i][j] = this.newStateFor(i,j)
+            }
         }
         this.grid = newGrid
+        //this.updateGrid = this.newUpdateGrid
+        //this.newUpdateGrid = []
     }
 
     newStateFor(x, y){
@@ -73,13 +87,34 @@ class Game {
             }
         }
         if(this.grid[x][y]){
-            if(this.survivalPopulations.indexOf(count) !== -1)
-                return this.selectRandom(majorities)+1
+            if(this.survivalPopulations.indexOf(count) !== -1){
+                //this.markUpdateGrid(x, y)
+                return this.factions == 1 ? 1 : this.selectRandom(majorities)+1
+            }
         }
         else
-            if(this.spawnPopulations.indexOf(count) !== -1)
-                return this.selectRandom(majorities)+1
+            if(this.spawnPopulations.indexOf(count) !== -1){
+                //this.markUpdateGrid(x, y)
+                return this.factions == 1 ? 1 : this.selectRandom(majorities)+1
+            }
         return 0
+    }
+
+    markUpdateGrid(x, y, existing = false){
+        for(var i = x-1; i<=x+1; i++)
+            for(var j = y-1; j<=y+1; j++)
+                if(0 <= i || 0 <= j || i < this.width || j < this.height ){
+                    if(!this.newUpdateGrid[i])
+                        this.newUpdateGrid[i] = []
+                    this.newUpdateGrid[i][j] = 1
+                    if(existing){
+                        if(!this.updateGrid)
+                            this.updateGrid = []
+                        if(!this.updateGrid[i])
+                            this.updateGrid[i] = []
+                        this.updateGrid[i][j] = 1
+                    }
+                }
     }
 
     selectRandom(list){
@@ -227,7 +262,8 @@ function autosize(){
     reset()
 }
 
-function run(interval = 100){
+function run(){
+    var interval = +getEl("interval").value
     game.start(interval, ()=>{display.drawGrid()})
 }
 
