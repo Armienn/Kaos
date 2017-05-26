@@ -196,9 +196,20 @@ function hideBar(){
 	getEl("bar").style.display = "none"
 }
 
+function parseThingamajig(element){
+    var values = element.value.split(",")
+    var list = []
+    for(var i in values)
+        if(+values[i])
+            list.push(+values[i])
+    return list
+}
+
 function reset(){
     game.stop()
     game = new Game({
+        spawnPopulations: parseThingamajig(getEl("spawnCount")),
+        survivalPopulations: parseThingamajig(getEl("survivalCount")),
         width: +getEl("width").value,
         height: +getEl("height").value,
         factions: +getEl("factions").value,
