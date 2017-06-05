@@ -83,7 +83,7 @@ function resetPositions(direction = 1) {
 	gameState.leftPlayer.position = new Vector(gameSettings.playerOffset, gameSettings.boardHeight / 2)
 	gameState.rightPlayer.position = new Vector(gameSettings.boardWidth - gameSettings.playerOffset, gameSettings.boardHeight / 2)
 	gameState.ball.position = new Vector(gameSettings.boardWidth / 2, gameSettings.boardHeight / 2)
-	gameState.ball.velocity.x = 0.01 * direction
+	gameState.ball.velocity = new Vector(0.01 * direction, 0)
 }
 
 function GameObject() {
