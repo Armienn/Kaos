@@ -7,15 +7,18 @@ var gameSettings = {
 	playerWidth: 0.025,
 	playerHeight: 0.1,
 	playerOffset: 0.05,
-	playerMaxSpeed: 0.01
+	playerMaxSpeed: 0.01,
+	ballMaxSpeed: 0.05,
+	bounceFactor: 1.05,
+	curveFactor: 0.1
 }
 var gameState
 var lastStateUpdate = new Date()
 var gameInputs = {
-	forward: new GameInput("ArrowUp"),
-	backward: new GameInput("ArrowDown"),
-	left: new GameInput("ArrowLeft"),
-	right: new GameInput("ArrowRight")
+	rightUp: new GameInput("ArrowUp"),
+	rightDown: new GameInput("ArrowDown"),
+	leftUp: new GameInput("w"),
+	leftDown: new GameInput("s")
 }
 var scale = 10
 
@@ -52,7 +55,6 @@ function initialise() {
 	gameState.objects = []
 
 	gameState.leftPlayer = new GameObject()
-	gameState.leftPlayer.position = new Vector(gameSettings.playerOffset, gameSettings.boardHeight / 2)
 	gameState.leftPlayer.draw = function (context) {
 		context.fillStyle = "white"
 		context.fillRect(-gameSettings.playerWidth / 2, -gameSettings.playerHeight / 2, gameSettings.playerWidth, gameSettings.playerHeight)
@@ -61,7 +63,6 @@ function initialise() {
 	gameState.leftScore = 0
 
 	gameState.rightPlayer = new GameObject()
-	gameState.rightPlayer.position = new Vector(gameSettings.boardWidth - gameSettings.playerOffset, gameSettings.boardHeight / 2)
 	gameState.rightPlayer.draw = function (context) {
 		context.fillStyle = "white"
 		context.fillRect(-gameSettings.playerWidth / 2, -gameSettings.playerHeight / 2, gameSettings.playerWidth, gameSettings.playerHeight)
@@ -70,12 +71,19 @@ function initialise() {
 	gameState.rightScore = 0
 
 	gameState.ball = new GameObject()
-	gameState.ball.position = new Vector(gameSettings.boardWidth / 2, gameSettings.boardHeight / 2)
 	gameState.ball.draw = function (context) {
 		context.fillStyle = "white"
 		context.fillRect(-gameSettings.ballSize / 2, -gameSettings.ballSize / 2, gameSettings.ballSize, gameSettings.ballSize)
 	}
 	gameState.objects.push(gameState.ball)
+	resetPositions()
+}
+
+function resetPositions(direction = 1) {
+	gameState.leftPlayer.position = new Vector(gameSettings.playerOffset, gameSettings.boardHeight / 2)
+	gameState.rightPlayer.position = new Vector(gameSettings.boardWidth - gameSettings.playerOffset, gameSettings.boardHeight / 2)
+	gameState.ball.position = new Vector(gameSettings.boardWidth / 2, gameSettings.boardHeight / 2)
+	gameState.ball.velocity.x = 0.01 * direction
 }
 
 function GameObject() {
@@ -185,37 +193,83 @@ function updateState() {
 	lastStateUpdate = new Date()
 }
 
-function gameLogic(){
+function gameLogic() {
 	updateFromInputs()
-	if(gameState.leftPlayer.position.y <= gameSettings.playerHeight / 2){
+	if (gameState.leftPlayer.position.y <= gameSettings.playerHeight / 2) {
 		gameState.leftPlayer.position.y = gameSettings.playerHeight / 2
-		if(gameState.leftPlayer.velocity.y < 0 )
+		if (gameState.leftPlayer.velocity.y < 0)
 			gameState.leftPlayer.velocity.y = 0
 	}
-	else if(gameSettings.boardHeight - gameSettings.playerHeight / 2 <= gameState.leftPlayer.position.y){
+	else if (gameSettings.boardHeight - gameSettings.playerHeight / 2 <= gameState.leftPlayer.position.y) {
 		gameState.leftPlayer.position.y = gameSettings.boardHeight - gameSettings.playerHeight / 2
-		if(0 < gameState.leftPlayer.velocity.y )
+		if (0 < gameState.leftPlayer.velocity.y)
 			gameState.leftPlayer.velocity.y = 0
 	}
-	if(gameState.rightPlayer.position.y <= gameSettings.playerHeight / 2){
+	if (gameState.rightPlayer.position.y <= gameSettings.playerHeight / 2) {
 		gameState.rightPlayer.position.y = gameSettings.playerHeight / 2
-		if(gameState.rightPlayer.velocity.y < 0 )
+		if (gameState.rightPlayer.velocity.y < 0)
 			gameState.rightPlayer.velocity.y = 0
 	}
-	else if(gameSettings.boardHeight - gameSettings.playerHeight / 2 <= gameState.rightPlayer.position.y){
+	else if (gameSettings.boardHeight - gameSettings.playerHeight / 2 <= gameState.rightPlayer.position.y) {
 		gameState.rightPlayer.position.y = gameSettings.boardHeight - gameSettings.playerHeight / 2
-		if(0 < gameState.rightPlayer.velocity.y )
+		if (0 < gameState.rightPlayer.velocity.y)
 			gameState.rightPlayer.velocity.y = 0
 	}
 	//ball collision and stuff
+	var ballCorners = getCorners(gameState.ball.position.x, gameState.ball.position.y, gameSettings.ballSize, gameSettings.ballSize)
+	var leftCorners = getCorners(gameState.leftPlayer.position.x, gameState.leftPlayer.position.y, gameSettings.playerWidth, gameSettings.playerHeight)
+	var rightCorners = getCorners(gameState.rightPlayer.position.x, gameState.rightPlayer.position.y, gameSettings.playerWidth, gameSettings.playerHeight)
+	if (collides(ballCorners, leftCorners)) {
+		gameState.ball.velocity.x *= -gameSettings.bounceFactor
+		if (gameState.ball.velocity.x < -gameSettings.ballMaxSpeed)
+			gameState.ball.velocity.x = -gameSettings.ballMaxSpeed
+		if (gameSettings.ballMaxSpeed < gameState.ball.velocity.x)
+			gameState.ball.velocity.x = gameSettings.ballMaxSpeed
+		gameState.ball.velocity.y += gameSettings.curveFactor * (gameState.ball.position.y - gameState.leftPlayer.position.y)
+	}
+	else if (collides(ballCorners, rightCorners)) {
+		gameState.ball.velocity.x *= -gameSettings.bounceFactor
+		if (gameState.ball.velocity.x < -gameSettings.ballMaxSpeed)
+			gameState.ball.velocity.x = -gameSettings.ballMaxSpeed
+		if (gameSettings.ballMaxSpeed < gameState.ball.velocity.x)
+			gameState.ball.velocity.x = gameSettings.ballMaxSpeed
+		gameState.ball.velocity.y += gameSettings.curveFactor * (gameState.ball.position.y - gameState.rightPlayer.position.y)
+	}
+	if (gameState.ball.position.y < gameSettings.ballSize / 2 || gameSettings.boardHeight - gameSettings.ballSize / 2 < gameState.ball.position.y)
+		gameState.ball.velocity.y *= -1
+	if (gameState.ball.position.x <= 0 || gameSettings.boardHeight <= gameState.ball.position.x)
+		resetPositions()
 }
 
-function updateFromInputs(){
+function getCorners(midX, midY, width, height) {
+	return {
+		topRight: new Vector(midX + width / 2, midY - height / 2),
+		bottomRight: new Vector(midX + width / 2, midY + height / 2),
+		bottomLeft: new Vector(midX - width / 2, midY + height / 2),
+		topLeft: new Vector(midX - width / 2, midY - height / 2)
+	}
+}
+
+function pointIsWithin(point, corners) {
+	return corners.topLeft.x <= point.x && point.x <= corners.bottomRight.x &&
+		corners.topLeft.y <= point.y && point.y <= corners.bottomRight.y
+}
+
+function collides(boxA, boxB) {
+	return pointIsWithin(boxA.topRight, boxB) || pointIsWithin(boxA.bottomRight, boxB) || pointIsWithin(boxA.bottomLeft, boxB) || pointIsWithin(boxA.topLeft, boxB)
+}
+
+function updateFromInputs() {
 	gameState.leftPlayer.velocity.y = 0
-	if (gameInputs.forward.pressed)
+	if (gameInputs.leftUp.pressed)
 		gameState.leftPlayer.velocity.y -= gameSettings.playerMaxSpeed
-	if (gameInputs.backward.pressed)
+	if (gameInputs.leftDown.pressed)
 		gameState.leftPlayer.velocity.y += gameSettings.playerMaxSpeed
+	gameState.rightPlayer.velocity.y = 0
+	if (gameInputs.rightUp.pressed)
+		gameState.rightPlayer.velocity.y -= gameSettings.playerMaxSpeed
+	if (gameInputs.rightDown.pressed)
+		gameState.rightPlayer.velocity.y += gameSettings.playerMaxSpeed
 }
 
 function updatePositions(objects) {
