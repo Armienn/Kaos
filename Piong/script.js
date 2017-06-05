@@ -22,6 +22,8 @@ var gameInputs = {
 	leftDown: new GameInput("s")
 }
 var scale = 10
+var horisontalOffset = 0
+var verticalOffset = 0
 
 window.onload = () => {
 	var canvas = document.getElementById("canvas")
@@ -34,13 +36,25 @@ window.onload = () => {
 			canvas.height = window.innerHeight
 			var horisontalRatio = canvas.width / gameSettings.boardWidth
 			var verticalRatio = canvas.height / gameSettings.boardHeight
-			scale = Math.min(horisontalRatio, verticalRatio)
+			if (horisontalRatio < verticalRatio) {
+				scale = horisontalRatio
+				horisontalOffset = 0
+				verticalOffset = (canvas.height - gameSettings.boardHeight * scale) / 2
+			}
+			else {
+				scale = verticalRatio
+				verticalOffset = 0
+				horisontalOffset = (canvas.width - gameSettings.boardWidth * scale) / 2
+			}
 		}
 		context.fillStyle = "black"
 		context.fillRect(0, 0, canvas.width, canvas.height)
+		context.save()
+		context.translate(horisontalOffset, verticalOffset)
 		var delta = (new Date().getTime() - lastStateUpdate.getTime()) / gameSettings.updateInterval
 		for (var i in gameState.objects)
 			drawObject(gameState.objects[i], context, delta)
+		context.restore()
 		requestAnimationFrame(draw)
 	}
 
