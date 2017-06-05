@@ -82,6 +82,8 @@ function initialise() {
 		context.font = "0.1px Georgia"
 		context.textAlign = "left"
 		context.fillText(gameState.leftScore, gameSettings.scoreOffset, gameSettings.scoreOffset)
+		if(gameState.showLeftWin)
+			context.fillText("+", gameSettings.scoreOffset, gameSettings.scoreOffset*2)
 	}
 	gameState.objects.push(gameState.leftScoreDisplay)
 	gameState.leftScore = 0
@@ -99,6 +101,8 @@ function initialise() {
 		context.font = "0.1px Georgia"
 		context.textAlign = "right"
 		context.fillText(gameState.rightScore, gameSettings.boardWidth - gameSettings.scoreOffset, gameSettings.scoreOffset)
+		if(gameState.showRightWin)
+			context.fillText("+", gameSettings.scoreOffset, gameSettings.scoreOffset*2)
 	}
 	gameState.objects.push(gameState.rightScoreDisplay)
 
@@ -271,10 +275,26 @@ function gameLogic() {
 		gameState.ball.velocity.y *= -1
 	if (gameState.ball.position.x <= 0) {
 		gameState.rightScore++
+		if (9 < gameState.rightScore) {
+			gameState.rightScore = 0
+			gameState.leftScore = 0
+			gameState.showRightWin = true
+			setTimeout(() => {
+				gameState.showRightWin = false
+			}, 2000)
+		}
 		resetPositions(Math.random() < 0.5 ? -1 : 1)
 	}
 	else if (gameSettings.boardHeight <= gameState.ball.position.x) {
 		gameState.leftScore++
+		if (9 < gameState.leftScore) {
+			gameState.rightScore = 0
+			gameState.leftScore = 0
+			gameState.showLeftWin = true
+			setTimeout(() => {
+				gameState.showLeftWin = false
+			}, 2000)
+		}
 		resetPositions(Math.random() < 0.5 ? -1 : 1)
 	}
 }
