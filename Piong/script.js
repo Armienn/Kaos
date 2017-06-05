@@ -7,7 +7,7 @@ var gameSettings = {
 	playerWidth: 0.025,
 	playerHeight: 0.1,
 	playerOffset: 0.05,
-	playerMaxSpeed: 0.01,
+	playerMaxSpeed: 0.015,
 	ballMaxSpeed: 0.05,
 	bounceFactor: 1.05,
 	curveFactor: 0.1
@@ -61,6 +61,14 @@ function initialise() {
 	}
 	gameState.objects.push(gameState.leftPlayer)
 	gameState.leftScore = 0
+	gameState.leftScoreDisplay = new GameObject()
+	gameState.leftScoreDisplay.draw = function (context) {
+		context.fillStyle = "white"
+		context.font="20px Georgia"
+		context.fillText("asfd"+gameState.leftScore, gameState.boardWidth/4, gameState.boardHeight/10)
+	}
+	gameState.objects.push(gameState.leftScoreDisplay)
+	gameState.leftScore = 0
 
 	gameState.rightPlayer = new GameObject()
 	gameState.rightPlayer.draw = function (context) {
@@ -69,6 +77,12 @@ function initialise() {
 	}
 	gameState.objects.push(gameState.rightPlayer)
 	gameState.rightScore = 0
+	gameState.rightScoreDisplay = new GameObject()
+	gameState.rightScoreDisplay.draw = function (context) {
+		context.fillStyle = "white"
+		context.fillText(gameState.leftScore, gameState.boardWidth/4, gameState.boardHeight/10)
+	}
+	gameState.objects.push(gameState.rightScoreDisplay)
 
 	gameState.ball = new GameObject()
 	gameState.ball.draw = function (context) {
@@ -237,8 +251,14 @@ function gameLogic() {
 	}
 	if (gameState.ball.position.y < gameSettings.ballSize / 2 || gameSettings.boardHeight - gameSettings.ballSize / 2 < gameState.ball.position.y)
 		gameState.ball.velocity.y *= -1
-	if (gameState.ball.position.x <= 0 || gameSettings.boardHeight <= gameState.ball.position.x)
+	if (gameState.ball.position.x <= 0){
+		gameSettings.leftScore++
 		resetPositions()
+	}
+	else if (gameSettings.boardHeight <= gameState.ball.position.x){
+		gameSettings.rightScore++
+		resetPositions()
+	}
 }
 
 function getCorners(midX, midY, width, height) {
