@@ -541,7 +541,7 @@ window.addEventListener("touchstart", function (event) {
 		pressedPositions[touch.identifier] = { x: (touch.clientX - horisontalOffset) / scale, y: (touch.clientY - verticalOffset) / scale }
 	}
 	event.preventDefault()
-}, true)
+}, {passive: false})
 
 window.addEventListener("touchmove", function (event) {
 	if (event.defaultPrevented)
@@ -551,7 +551,7 @@ window.addEventListener("touchmove", function (event) {
 		pressedPositions[touch.identifier] = { x: (touch.clientX - horisontalOffset) / scale, y: (touch.clientY - verticalOffset) / scale }
 	}
 	event.preventDefault()
-}, true)
+}, {passive: false})
 
 window.addEventListener("touchend", function (event) {
 	if (event.defaultPrevented)
@@ -561,4 +561,4 @@ window.addEventListener("touchend", function (event) {
 		delete pressedPositions[touch.identifier]
 	}
 	event.preventDefault()
-}, true)
+}, {passive: false})
