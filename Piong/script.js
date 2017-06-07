@@ -76,16 +76,23 @@ function initialise() {
 	}
 	gameState.objects.push(gameState.leftPlayer)
 	gameState.leftScore = 0
-	gameState.leftScoreDisplay = new GameObject()
-	gameState.leftScoreDisplay.draw = function (context) {
-		context.fillStyle = "white"
-		context.font = "0.1px Georgia"
-		context.textAlign = "left"
-		context.fillText(gameState.leftScore, gameSettings.scoreOffset, gameSettings.scoreOffset)
-		if(gameState.showLeftWin)
-			context.fillText("+", gameSettings.scoreOffset, gameSettings.scoreOffset*2)
-	}
+	gameState.leftScoreDisplay = new PixelObject()
+	gameState.leftScoreDisplay.scale = 0.015
+	gameState.leftScoreDisplay.position = new Vector(gameSettings.scoreOffset, gameSettings.scoreOffset)
+	gameState.leftScoreDisplay.getMatrix = () => { return numberMatrixes[gameState.leftScore] }
 	gameState.objects.push(gameState.leftScoreDisplay)
+	gameState.leftWinDisplay = new PixelObject()
+	gameState.leftWinDisplay.scale = 0.015
+	gameState.leftWinDisplay.position = new Vector(gameSettings.scoreOffset, gameSettings.scoreOffset * 2)
+	gameState.leftWinDisplay.getMatrix = () => {
+		if (!gameState.showLeftWin) return [[]]
+		return [
+			[0, 1, 0],
+			[1, 1, 1],
+			[0, 1, 0],
+		]
+	}
+	gameState.objects.push(gameState.leftWinDisplay)
 	gameState.leftScore = 0
 
 	gameState.rightPlayer = new GameObject()
@@ -95,16 +102,25 @@ function initialise() {
 	}
 	gameState.objects.push(gameState.rightPlayer)
 	gameState.rightScore = 0
-	gameState.rightScoreDisplay = new GameObject()
-	gameState.rightScoreDisplay.draw = function (context) {
-		context.fillStyle = "white"
-		context.font = "0.1px Georgia"
-		context.textAlign = "right"
-		context.fillText(gameState.rightScore, gameSettings.boardWidth - gameSettings.scoreOffset, gameSettings.scoreOffset)
-		if(gameState.showRightWin)
-			context.fillText("+", gameSettings.scoreOffset, gameSettings.scoreOffset*2)
-	}
+	gameState.rightScoreDisplay = new PixelObject()
+	gameState.rightScoreDisplay.scale = 0.015
+	gameState.rightScoreDisplay.alignRight = true
+	gameState.rightScoreDisplay.position = new Vector(gameSettings.boardWidth - gameSettings.scoreOffset, gameSettings.scoreOffset)
+	gameState.rightScoreDisplay.getMatrix = () => { return numberMatrixes[gameState.rightScore] }
 	gameState.objects.push(gameState.rightScoreDisplay)
+	gameState.rightWinDisplay = new PixelObject()
+	gameState.rightWinDisplay.scale = 0.015
+	gameState.rightWinDisplay.alignRight = true
+	gameState.rightWinDisplay.position = new Vector(gameSettings.boardWidth - gameSettings.scoreOffset, gameSettings.scoreOffset * 2)
+	gameState.rightWinDisplay.getMatrix = () => {
+		if (!gameState.showRightWin) return [[]]
+		return [
+			[0, 1, 0],
+			[1, 1, 1],
+			[0, 1, 0],
+		]
+	}
+	gameState.objects.push(gameState.rightWinDisplay)
 
 	gameState.ball = new GameObject()
 	gameState.ball.draw = function (context) {
@@ -129,11 +145,98 @@ function GameObject() {
 	this.rotationalVelocity = 0
 	this.friction = 0.3
 	this.rotationalFriction = 0.05
+	this.skipPhysics = false
 	this.draw = function (context) {
 		context.fillStyle = "blue"
 		context.fillRect(-5, -5, 10, 10)
 	}
 }
+
+function PixelObject() {
+	this.colour = "white"
+	this.scale = 1
+	this.getMatrix = () => [[]]
+	this.alignRight = false
+	this.position = new Vector()
+	this.velocity = new Vector()
+	this.rotation = 0
+	this.rotationalVelocity = 0
+	this.friction = 0.3
+	this.rotationalFriction = 0.05
+	this.skipPhysics = false
+	this.draw = function (context) {
+		context.fillStyle = this.colour
+		var matrix = this.getMatrix()
+		var rightAlignment = this.alignRight && matrix[0] ? matrix[0].length * this.scale : 0
+		for (var i in matrix)
+			for (var j in matrix[i])
+				if (matrix[i][j])
+					context.fillRect(i * this.scale - rightAlignment, j * this.scale, this.scale, this.scale)
+	}
+}
+
+var numberMatrixes = [
+	// 0
+	[
+		[1, 1, 1, 1, 1],
+		[1, 0, 0, 0, 1],
+		[1, 1, 1, 1, 1]
+	],
+	// 1
+	[
+		[0, 0, 0, 0, 0],
+		[0, 0, 0, 0, 0],
+		[1, 1, 1, 1, 1]
+	],
+	// 2
+	[
+		[1, 0, 1, 1, 1],
+		[1, 0, 1, 0, 1],
+		[1, 1, 1, 0, 1]
+	],
+	// 3
+	[
+		[1, 0, 1, 0, 1],
+		[1, 0, 1, 0, 1],
+		[1, 1, 1, 1, 1]
+	],
+	// 4
+	[
+		[1, 1, 1, 0, 0],
+		[0, 0, 1, 0, 0],
+		[1, 1, 1, 1, 1]
+	],
+	// 5
+	[
+		[1, 1, 1, 0, 1],
+		[1, 0, 1, 0, 1],
+		[1, 0, 1, 1, 1]
+	],
+	// 6
+	[
+		[1, 1, 1, 1, 1],
+		[1, 0, 1, 0, 1],
+		[1, 0, 1, 1, 1]
+	],
+	// 7
+	[
+		[1, 0, 0, 0, 0],
+		[1, 0, 0, 0, 0],
+		[1, 1, 1, 1, 1]
+	],
+	// 8
+	[
+		[1, 1, 1, 1, 1],
+		[1, 0, 1, 0, 1],
+		[1, 1, 1, 1, 1]
+	],
+	// 9
+	[
+		[1, 1, 1, 0, 1],
+		[1, 0, 1, 0, 1],
+		[1, 1, 1, 1, 1]
+	]
+]
 
 class Vector {
 	constructor(x = 0, y = 0) {
@@ -255,7 +358,7 @@ function gameLogic() {
 	var ballCorners = getCorners(gameState.ball.position.x, gameState.ball.position.y, gameSettings.ballSize, gameSettings.ballSize)
 	var leftCorners = getCorners(gameState.leftPlayer.position.x, gameState.leftPlayer.position.y, gameSettings.playerWidth, gameSettings.playerHeight)
 	var rightCorners = getCorners(gameState.rightPlayer.position.x, gameState.rightPlayer.position.y, gameSettings.playerWidth, gameSettings.playerHeight)
-	if (collides(ballCorners, leftCorners)) {
+	if (collides(ballCorners, leftCorners) && gameState.ball.velocity.x < 0) {
 		gameState.ball.velocity.x *= -gameSettings.bounceFactor
 		if (gameState.ball.velocity.x < -gameSettings.ballMaxSpeed)
 			gameState.ball.velocity.x = -gameSettings.ballMaxSpeed
@@ -263,7 +366,7 @@ function gameLogic() {
 			gameState.ball.velocity.x = gameSettings.ballMaxSpeed
 		gameState.ball.velocity.y += gameSettings.curveFactor * (gameState.ball.position.y - gameState.leftPlayer.position.y)
 	}
-	else if (collides(ballCorners, rightCorners)) {
+	else if (collides(ballCorners, rightCorners) && 0 < gameState.ball.velocity.x) {
 		gameState.ball.velocity.x *= -gameSettings.bounceFactor
 		if (gameState.ball.velocity.x < -gameSettings.ballMaxSpeed)
 			gameState.ball.velocity.x = -gameSettings.ballMaxSpeed
@@ -342,6 +445,8 @@ function updatePositions(objects) {
 function updatePhysics(objects) {
 	for (var i in objects) {
 		var object = objects[i]
+		if (object.skipPhysics)
+			continue
 		var frictionAcceleration = object.velocity.copy().unitVector().multiply(object.friction)
 		if (object.velocity.lengthSquared < frictionAcceleration.lengthSquared)
 			object.velocity.set(0, 0)
@@ -385,3 +490,4 @@ window.addEventListener("keyup", function (event) {
 		}
 	}
 }, true)
+
