@@ -431,6 +431,24 @@ function updateFromInputs() {
 		gameState.rightPlayer.velocity.y -= gameSettings.playerMaxSpeed
 	if (gameInputs.rightDown.pressed)
 		gameState.rightPlayer.velocity.y += gameSettings.playerMaxSpeed
+
+	for (var i in pressedPositions) {
+		let positions = pressedPositions[i]
+		if (positions.x < gameSettings.boardWidth / 2) {
+			gameState.leftPlayer.velocity.y = 0
+			if (positions.y < gameState.leftPlayer.position.y)
+				gameState.leftPlayer.velocity.y -= Math.min(gameSettings.playerMaxSpeed, gameState.leftPlayer.position.y - positions.y)
+			else
+				gameState.leftPlayer.velocity.y += Math.min(gameSettings.playerMaxSpeed, positions.y - gameState.leftPlayer.position.y)
+		}
+		else {
+			gameState.rightPlayer.velocity.y = 0
+			if (positions.y < gameState.leftPlayer.position.y)
+				gameState.rightPlayer.velocity.y -= Math.min(gameSettings.playerMaxSpeed, gameState.rightPlayer.position.y - positions.y)
+			else
+				gameState.rightPlayer.velocity.y += Math.min(gameSettings.playerMaxSpeed, positions.y - gameState.rightPlayer.position.y)
+		}
+	}
 }
 
 function updatePositions(objects) {
@@ -491,3 +509,55 @@ window.addEventListener("keyup", function (event) {
 	}
 }, true)
 
+var pressedPositions = {}
+
+window.addEventListener("mousedown", function (event) {
+	if (event.defaultPrevented)
+		return
+	pressedPositions["mouse"] = { x: (event.x - horisontalOffset) / scale, y: (event.y - verticalOffset) / scale }
+	event.preventDefault()
+}, true)
+
+window.addEventListener("mousemove", function (event) {
+	if (event.defaultPrevented)
+		return
+	if (pressedPositions["mouse"])
+		pressedPositions["mouse"] = { x: (event.x - horisontalOffset) / scale, y: (event.y - verticalOffset) / scale }
+	event.preventDefault()
+}, true)
+
+window.addEventListener("mouseup", function (event) {
+	if (event.defaultPrevented)
+		return
+	delete pressedPositions["mouse"]
+}, true)
+
+
+window.addEventListener("touchstart", function (event) {
+	if (event.defaultPrevented)
+		return
+	for (var i = 0; i < event.changedTouches; i++) {
+		let touch = event.changedTouches[i]
+		pressedPositions[touch.identifier] = { x: (touch.clientX - horisontalOffset) / scale, y: (touch.clientY - verticalOffset) / scale }
+	}
+	event.preventDefault()
+}, true)
+
+window.addEventListener("touchmove", function (event) {
+	if (event.defaultPrevented)
+		return
+	for (var i = 0; i < event.changedTouches; i++) {
+		let touch = event.changedTouches[i]
+		pressedPositions[touch.identifier] = { x: (touch.clientX - horisontalOffset) / scale, y: (touch.clientY - verticalOffset) / scale }
+	}
+	event.preventDefault()
+}, true)
+
+window.addEventListener("touchend", function (event) {
+	if (event.defaultPrevented)
+		return
+	for (var i = 0; i < event.changedTouches; i++) {
+		let touch = event.changedTouches[i]
+		delete pressedPositions[touch.identifier]
+	}
+}, true)
