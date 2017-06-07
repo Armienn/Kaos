@@ -536,27 +536,25 @@ window.addEventListener("mouseup", function (event) {
 window.addEventListener("touchstart", function (event) {
 	if (event.defaultPrevented)
 		return
-	for (var i = 0; i < event.changedTouches; i++) {
+	for (var i = 0; i < event.changedTouches.length; i++) {
 		let touch = event.changedTouches[i]
 		pressedPositions[touch.identifier] = { x: (touch.clientX - horisontalOffset) / scale, y: (touch.clientY - verticalOffset) / scale }
 	}
-	event.preventDefault()
 }, true)
 
 window.addEventListener("touchmove", function (event) {
 	if (event.defaultPrevented)
 		return
-	for (var i = 0; i < event.changedTouches; i++) {
+	for (var i = 0; i < event.changedTouches.length; i++) {
 		let touch = event.changedTouches[i]
 		pressedPositions[touch.identifier] = { x: (touch.clientX - horisontalOffset) / scale, y: (touch.clientY - verticalOffset) / scale }
 	}
-	event.preventDefault()
 }, true)
 
 window.addEventListener("touchend", function (event) {
 	if (event.defaultPrevented)
 		return
-	for (var i = 0; i < event.changedTouches; i++) {
+	for (var i = 0; i < event.changedTouches.length; i++) {
 		let touch = event.changedTouches[i]
 		delete pressedPositions[touch.identifier]
 	}
