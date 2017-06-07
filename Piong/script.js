@@ -540,6 +540,7 @@ window.addEventListener("touchstart", function (event) {
 		let touch = event.changedTouches[i]
 		pressedPositions[touch.identifier] = { x: (touch.clientX - horisontalOffset) / scale, y: (touch.clientY - verticalOffset) / scale }
 	}
+	event.preventDefault()
 }, true)
 
 window.addEventListener("touchmove", function (event) {
@@ -549,6 +550,7 @@ window.addEventListener("touchmove", function (event) {
 		let touch = event.changedTouches[i]
 		pressedPositions[touch.identifier] = { x: (touch.clientX - horisontalOffset) / scale, y: (touch.clientY - verticalOffset) / scale }
 	}
+	event.preventDefault()
 }, true)
 
 window.addEventListener("touchend", function (event) {
@@ -558,4 +560,5 @@ window.addEventListener("touchend", function (event) {
 		let touch = event.changedTouches[i]
 		delete pressedPositions[touch.identifier]
 	}
+	event.preventDefault()
 }, true)
