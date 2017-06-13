@@ -59,7 +59,7 @@ window.onload = () => {
 	}
 
 	var sizeChanged = true
-	window.onresize = function () { sizeChanged = true }
+	window.onresize = function () {window.scrollTo(0,1); sizeChanged = true }
 	initialise()
 	setInterval(updateState, gameSettings.updateInterval)
 	requestAnimationFrame(draw)
