@@ -12,13 +12,21 @@
 			<textarea id="input" style="width: 100%; height: calc(100vh - 2rem); tab-size: 2; box-sizing: border-box;"></textarea>
 			<button type="button" onclick="eval(document.getElementById('input').value)" style="width: 100%;">Kør</button>
 		</div>
-		<pre id="output" style="white-space: pre-wrap; tab-size: 2; width: 50vw; float: left; box-sizing: border-box; margin:0;padding:0.5rem"></pre>
+		<pre id="output" style="white-space: pre-wrap; tab-size: 2; width: 50vw; float: left; box-sizing: border-box; margin:0;padding:0.5rem;height: 100vh;overflow-y: scroll;"></pre>
 	</div>
 
 	<script type="text/javascript">
+		// output functions
 		var output = function (text) {
-			document.getElementById("output").innerHTML += text
+			document.getElementById("output").innerHTML += encodeHTML(text)
 		}
+		var outputJSON = function (obj) {
+			document.getElementById("output").innerHTML += encodeHTML(formattedJSON(obj))
+		}
+		var clear = function () {
+			document.getElementById("output").innerHTML = ""
+		}
+		//
 		var formattedJSON = function (obj, level) {
 			if (!level)
 				level = 0
@@ -29,7 +37,7 @@
 				var line = ""
 				for (var i = 0; i < level + 1; i++)
 					line += "\t"
-				if(!(obj instanceof Array))
+				if (!(obj instanceof Array))
 					line += "\"" + key + "\": "
 				if (typeof obj[key] == "string")
 					line += JSON.stringify(obj[key])
@@ -44,11 +52,24 @@
 				result += "\t"
 			return result + (obj instanceof Array ? "]" : "}")
 		}
-		var outputJSON = function (obj) {
-			document.getElementById("output").innerHTML += formattedJSON(obj)
-		}
-		var clear = function () {
-			document.getElementById("output").innerHTML = ""
+		//
+		var parseCSVTable = function (data, separator) {
+			var rows = data.split("\n")
+			for (var i in rows) {
+				var list = rows[i].split(separator)
+				rows[i] = list
+			}
+
+			var headers = rows[0]
+			var result = []
+			for (var i = 1; i < rows.length; i++) {
+				var entry = {}
+				for (var j in headers) {
+					entry[headers[j]] = rows[i][j]
+				}
+				result.push(entry)
+			}
+			return result
 		}
 		// function to encode in html
 		var encodeHTML = (function () {
